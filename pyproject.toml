@@ -1,0 +1,65 @@
+[build-system]
+requires = ["setuptools >= 61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "okx-client-gw"
+version = "0.1.0"
+description = "Async HTTP/WebSocket client gateway for OKX Exchange"
+readme = "README.md"
+requires-python = ">= 3.13"
+authors = [
+    {name = "Stuart Kingham", email = "stuart.kingham@quantfidential.com"},
+]
+maintainers = [
+    {name = "Stuart Kingham", email = "stuart.kingham@quantfidential.com"},
+]
+dependencies = [
+    "client-gw-core>=0.1.0",
+    "pydantic>=2.10",
+    "python-dotenv>=1.0",
+]
+
+[tool.setuptools.packages.find]
+where = ["src"]
+include = ["okx_client_gw*"]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.3",
+    "pytest-asyncio>=0.25",
+    "pytest-bdd>=8.1",
+    "respx>=0.22",
+    "ruff>=0.8",
+]
+cli = [
+    "typer>=0.15",
+    "rich>=13.9",
+]
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+python_functions = ["test_*"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py313"
+
+[tool.ruff.lint]
+select = [
+    "E",    # pycodestyle errors
+    "W",    # pycodestyle warnings
+    "F",    # Pyflakes
+    "I",    # isort
+    "B",    # flake8-bugbear
+    "C4",   # flake8-comprehensions
+    "UP",   # pyupgrade
+]
+ignore = [
+    "E501",  # line too long (handled by formatter)
+]
+
+[tool.ruff.lint.isort]
+known-first-party = ["okx_client_gw"]
