@@ -76,18 +76,27 @@ class OrderBook(BaseModel):
     model_config = {"frozen": True}
 
     @classmethod
-    def from_okx_dict(cls, data: dict, inst_id: str) -> "OrderBook":
+    def from_okx_dict(cls, data: dict, inst_id: str | None = None) -> "OrderBook":
         """Create an OrderBook from OKX API dict response.
 
         Args:
             data: Dict from OKX API order book response.
-            inst_id: Instrument ID.
+            inst_id: Instrument ID. If not provided, must be present in data
+                     as "instId" (WebSocket push format).
 
         Returns:
             OrderBook instance.
+
+        Raises:
+            ValueError: If inst_id is not provided and not in data.
         """
+        # WebSocket push messages include instId in the data
+        resolved_inst_id = inst_id or data.get("instId")
+        if not resolved_inst_id:
+            raise ValueError("inst_id must be provided or present in data as 'instId'")
+
         return cls(
-            inst_id=inst_id,
+            inst_id=resolved_inst_id,
             bids=[OrderBookLevel.from_okx_array(b) for b in data.get("bids", [])],
             asks=[OrderBookLevel.from_okx_array(a) for a in data.get("asks", [])],
             ts=datetime.fromtimestamp(int(data["ts"]) / 1000),
