@@ -168,17 +168,21 @@ coinbase-client-gw-py.
 
 ---
 
-### Milestone 9: Presentation Layer 📋 PLANNED
+### Milestone 9: Presentation Layer ✅ COMPLETED
 
-**Branch:** `feature/epic-OKX-0001-milestone-9-cli`
-**Status:** Planned
+**Branch:** `feature/epic-OKX-0001-public-market-data-client`
+**Status:** ✅ Completed
 
-**Tasks:**
+**Completed:**
 
-- [ ] Create presentation/cli/app.py with Typer
-- [ ] Add candle download command
-- [ ] Add ticker display command
-- [ ] Add WebSocket streaming command
+- [x] Create presentation/cli/app.py with Typer
+- [x] Add `okx candles` command for candlestick data
+- [x] Add `okx ticker` command for single instrument
+- [x] Add `okx tickers` command for all instruments of a type
+- [x] Add `okx instruments` command for listing available instruments
+- [x] Add `okx orderbook` command for order book display
+- [x] Add `okx stream` command for WebSocket streaming
+- [x] Add CLI entry point in pyproject.toml
 
 ---
 
@@ -235,5 +239,5 @@ async with OkxHttpClient() as client:
 ---
 
 *Last Updated: 2025-12-06*
-*Completed: Epic OKX-0001 Milestones 1-8 (HTTP & WebSocket clients + services complete)*
-*Next: Epic OKX-0001 Milestone 9 (Presentation Layer - CLI)*
+*Completed: Epic OKX-0001 Milestones 1-9 (Full HTTP/WebSocket implementation + CLI)*
+*Next: Epic OKX-0001 Milestone 10 (Testing & Documentation)*
