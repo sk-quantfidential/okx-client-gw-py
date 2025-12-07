@@ -69,66 +69,65 @@ coinbase-client-gw-py.
 
 ---
 
-### Milestone 3: Port Interfaces 📋 PLANNED
+### Milestone 3: Port Interfaces ✅ COMPLETED
 
-**Branch:** `feature/epic-OKX-0001-milestone-3-ports`
-**Status:** Planned
+**Branch:** `feature/epic-OKX-0001-public-market-data-client`
+**Status:** ✅ Completed
 
-**Tasks:**
+**Completed:**
 
-- [ ] Create ports/http_client.py (OkxHttpClientProtocol)
-- [ ] Create ports/ws_client.py (OkxWsClientProtocol)
-- [ ] Define response types
-
----
-
-### Milestone 4: HTTP Adapter 📋 PLANNED
-
-**Branch:** `feature/epic-OKX-0001-milestone-4-http`
-**Status:** Planned
-
-**Tasks:**
-
-- [ ] Create adapters/http/okx_http_client.py
-- [ ] Extend HttpClient from client-gw-core
-- [ ] Implement OKX response parsing (code/msg/data)
-- [ ] Configure rate limiting (20 req/sec public)
-- [ ] Configure retry logic for 5xx errors
-- [ ] Add unit tests with respx mocking
+- [x] Create ports/http_client.py (OkxHttpClientProtocol)
+- [x] Create ports/ws_client.py (OkxWsClientProtocol)
+- [x] Define response types
 
 ---
 
-### Milestone 5: HTTP Commands 📋 PLANNED
+### Milestone 4: HTTP Adapter ✅ COMPLETED
 
-**Branch:** `feature/epic-OKX-0001-milestone-5-commands`
-**Status:** Planned
+**Branch:** `feature/epic-OKX-0001-public-market-data-client`
+**Status:** ✅ Completed
 
-**Tasks:**
+**Completed:**
 
-- [ ] Create application/commands/base.py (OkxCommand[T])
-- [ ] Create GetInstrumentsCommand
-- [ ] Create GetTickerCommand
-- [ ] Create GetCandlesCommand
-- [ ] Create GetOrderBookCommand
-- [ ] Create GetTradesCommand
-- [ ] Add unit tests for commands
+- [x] Create adapters/http/okx_http_client.py
+- [x] Extend HttpClient from client-gw-core
+- [x] Implement OKX response parsing (code/msg/data)
+- [x] Configure rate limiting (20 req/sec public)
+- [x] Configure retry logic for 5xx errors
 
 ---
 
-### Milestone 6: HTTP Services 📋 PLANNED
+### Milestone 5: HTTP Commands ✅ COMPLETED
 
-**Branch:** `feature/epic-OKX-0001-milestone-6-services`
-**Status:** Planned
+**Branch:** `feature/epic-OKX-0001-public-market-data-client`
+**Status:** ✅ Completed
 
-**Tasks:**
+**Completed:**
 
-- [ ] Create application/services/market_service.py
-- [ ] Implement get_candles() with pagination
-- [ ] Implement get_ticker()
-- [ ] Implement get_orderbook()
-- [ ] Implement get_trades()
-- [ ] Implement stream_candles() async generator
-- [ ] Add unit tests for services
+- [x] Create application/commands/base.py (OkxCommand[T])
+- [x] Create GetInstrumentsCommand, GetInstrumentCommand
+- [x] Create GetTickerCommand, GetTickersCommand
+- [x] Create GetCandlesCommand, GetHistoryCandlesCommand
+- [x] Create GetOrderBookCommand
+- [x] Create GetTradesCommand
+
+---
+
+### Milestone 6: HTTP Services ✅ COMPLETED
+
+**Branch:** `feature/epic-OKX-0001-public-market-data-client`
+**Status:** ✅ Completed
+
+**Completed:**
+
+- [x] Create application/services/market_service.py
+- [x] Create application/services/instrument_service.py
+- [x] Implement get_candles() with automatic pagination
+- [x] Implement get_ticker(), get_tickers()
+- [x] Implement get_orderbook()
+- [x] Implement get_trades()
+- [x] Implement stream_candles() async generator
+- [x] Implement stream_history_candles() for older data
 
 ---
 
@@ -231,5 +230,5 @@ async with OkxHttpClient() as client:
 ---
 
 *Last Updated: 2025-12-06*
-*Completed: Epic OKX-0001 Milestones 1-2*
-*Next: Epic OKX-0001 Milestone 3 (Port Interfaces)*
+*Completed: Epic OKX-0001 Milestones 1-6 (HTTP client complete)*
+*Next: Epic OKX-0001 Milestone 7 (WebSocket Adapter)*
