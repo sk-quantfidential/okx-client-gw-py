@@ -149,18 +149,22 @@ coinbase-client-gw-py.
 
 ---
 
-### Milestone 8: WebSocket Services 📋 PLANNED
+### Milestone 8: WebSocket Services ✅ COMPLETED
 
-**Branch:** `feature/epic-OKX-0001-milestone-8-ws-services`
-**Status:** Planned
+**Branch:** `feature/epic-OKX-0001-public-market-data-client`
+**Status:** ✅ Completed
 
-**Tasks:**
+**Completed:**
 
-- [ ] Create WebSocket stream services
-- [ ] Implement ticker streaming
-- [ ] Implement candle streaming
-- [ ] Implement orderbook streaming
-- [ ] Add message routing and parsing
+- [x] Create StreamingService for single-channel streaming
+- [x] Create MultiChannelStreamingService for multi-instrument streaming
+- [x] Implement ticker streaming (stream_tickers)
+- [x] Implement trade streaming (stream_trades)
+- [x] Implement candle streaming (stream_candles)
+- [x] Implement orderbook streaming (stream_orderbook)
+- [x] Implement BBO streaming (stream_bbo)
+- [x] Add message routing and parsing with type hints
+- [x] Add unit tests (28 tests passing)
 
 ---
 
@@ -231,5 +235,5 @@ async with OkxHttpClient() as client:
 ---
 
 *Last Updated: 2025-12-06*
-*Completed: Epic OKX-0001 Milestones 1-7 (HTTP & WebSocket clients complete)*
-*Next: Epic OKX-0001 Milestone 8 (WebSocket Services)*
+*Completed: Epic OKX-0001 Milestones 1-8 (HTTP & WebSocket clients + services complete)*
+*Next: Epic OKX-0001 Milestone 9 (Presentation Layer - CLI)*
