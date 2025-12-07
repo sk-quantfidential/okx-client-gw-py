@@ -37,6 +37,9 @@ cli = [
     "rich>=13.9",
 ]
 
+[project.scripts]
+okx = "okx_client_gw.presentation.cli.app:main"
+
 [tool.pytest.ini_options]
 asyncio_mode = "auto"
 testpaths = ["tests"]
