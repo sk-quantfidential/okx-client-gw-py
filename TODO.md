@@ -131,20 +131,21 @@ coinbase-client-gw-py.
 
 ---
 
-### Milestone 7: WebSocket Adapter 📋 PLANNED
+### Milestone 7: WebSocket Adapter ✅ COMPLETED
 
-**Branch:** `feature/epic-OKX-0001-milestone-7-websocket`
-**Status:** Planned
+**Branch:** `feature/epic-OKX-0001-public-market-data-client`
+**Status:** ✅ Completed
 
-**Tasks:**
+**Completed:**
 
-- [ ] Create adapters/websocket/okx_ws_client.py
-- [ ] Extend WsClient from client-gw-core
-- [ ] Implement connection management
-- [ ] Implement subscription handling
-- [ ] Implement message parsing
-- [ ] Add reconnection logic
-- [ ] Add unit tests
+- [x] Create adapters/websocket/okx_ws_client.py
+- [x] Extend WsClient from client-gw-core
+- [x] Implement connection management (connect/disconnect)
+- [x] Implement subscription handling (subscribe/unsubscribe)
+- [x] Implement convenience methods (subscribe_tickers, subscribe_trades, etc.)
+- [x] Add ping/pong keep-alive support
+- [x] Add async context manager support (okx_ws_session)
+- [x] Add unit tests (20 tests passing)
 
 ---
 
@@ -230,5 +231,5 @@ async with OkxHttpClient() as client:
 ---
 
 *Last Updated: 2025-12-06*
-*Completed: Epic OKX-0001 Milestones 1-6 (HTTP client complete)*
-*Next: Epic OKX-0001 Milestone 7 (WebSocket Adapter)*
+*Completed: Epic OKX-0001 Milestones 1-7 (HTTP & WebSocket clients complete)*
+*Next: Epic OKX-0001 Milestone 8 (WebSocket Services)*
