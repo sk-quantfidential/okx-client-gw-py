@@ -1,0 +1,17 @@
+# Validation Exceptions Configuration
+# Files and patterns listed here are excluded from validation checks
+#
+# Version: 1.0.0
+# Project: okx-client-gw-py
+# Last Updated: 2025-12-08
+
+# Test fixtures and sample data
+tests/fixtures/**
+
+# Integration test logs (generated at runtime)
+tests/integration/*.log
+
+# Build artifacts (should be in .gitignore)
+dist/**
+build/**
+*.egg-info/**
