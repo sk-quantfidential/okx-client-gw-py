@@ -71,7 +71,12 @@ class Instrument(BaseModel):
         """
 
         def parse_decimal(value: str | None) -> Decimal | None:
+            """Parse decimal, returning None for empty strings."""
             return Decimal(value) if value else None
+
+        def parse_decimal_required(value: str | None, default: str = "0") -> Decimal:
+            """Parse required decimal, using default for empty strings."""
+            return Decimal(value) if value else Decimal(default)
 
         def parse_timestamp(value: str | None) -> datetime | None:
             return datetime.fromtimestamp(int(value) / 1000) if value else None
@@ -92,9 +97,9 @@ class Instrument(BaseModel):
             list_time=parse_timestamp(data.get("listTime")),
             exp_time=parse_timestamp(data.get("expTime")),
             lever=parse_decimal(data.get("lever")),
-            tick_sz=Decimal(data["tickSz"]),
-            lot_sz=Decimal(data["lotSz"]),
-            min_sz=Decimal(data["minSz"]),
+            tick_sz=parse_decimal_required(data.get("tickSz")),
+            lot_sz=parse_decimal_required(data.get("lotSz")),
+            min_sz=parse_decimal_required(data.get("minSz")),
             ct_type=data.get("ctType") or None,
             state=data.get("state", "live"),
         )
