@@ -117,3 +117,56 @@ class OkxHttpClientProtocol(Protocol):
             exc_tb: Exception traceback if raised
         """
         ...
+
+    async def get_data_auth(
+        self,
+        endpoint: str,
+        *,
+        params: Mapping[str, Any] | None = None,
+    ) -> list[Any]:
+        """Make an authenticated GET request and return parsed data.
+
+        Requires credentials to be configured on the client.
+
+        Args:
+            endpoint: API endpoint path (e.g., "/api/v5/account/balance")
+            params: Query parameters
+
+        Returns:
+            The "data" field from OKX response
+
+        Raises:
+            OkxApiError: If OKX returns an error response or no credentials
+            httpx.HTTPError: On HTTP errors
+        """
+        ...
+
+    async def post_data_auth(
+        self,
+        endpoint: str,
+        *,
+        json_data: Any = None,
+        params: Mapping[str, Any] | None = None,
+    ) -> list[Any]:
+        """Make an authenticated POST request and return parsed data.
+
+        Requires credentials to be configured on the client.
+
+        Args:
+            endpoint: API endpoint path
+            json_data: JSON body data
+            params: Query parameters
+
+        Returns:
+            The "data" field from OKX response
+
+        Raises:
+            OkxApiError: If OKX returns an error response or no credentials
+            httpx.HTTPError: On HTTP errors
+        """
+        ...
+
+    @property
+    def has_credentials(self) -> bool:
+        """Check if credentials are configured for authenticated requests."""
+        ...
