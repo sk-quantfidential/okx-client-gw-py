@@ -381,26 +381,105 @@ Higher rate limits available for VIP accounts based on:
 
 ---
 
-## Implementation Priority for okx-client-gw-py
+## Implementation Status for okx-client-gw-py
 
-### Phase 1 (Current - v0.1.0)
-- ✅ Public Market Data (REST + WebSocket)
+### Epic OKX-0001: Public Market Data (Complete)
+- ✅ Public Market Data REST API
+- ✅ Public WebSocket Streaming
 - ✅ Instruments Service
 - ✅ Candles, Tickers, Trades, Order Book
 
-### Phase 2 (Future)
-- Account Balance and Position Reading
-- Trade History and Fills
+### Epic OKX-0002: Private APIs (Complete)
+- ✅ HMAC-SHA256 Authentication
+- ✅ Account Balance and Position Reading
+- ✅ Account Configuration
+- ✅ Position Management
+- ✅ Order Placement (single)
+- ✅ Order Cancellation (single and batch)
+- ✅ Order Amendment
+- ✅ Order History and Pending Orders
+- ✅ Public Data Extensions (currencies, discount rates, funding rates)
 
-### Phase 3 (Future)
-- Order Placement and Management
-- Algo Order Support
-
-### Phase 4 (Future)
-- Funding Operations
-- Sub-Account Management
+### Future Phases
+- ⏳ Private WebSocket Channels (account, positions, orders)
+- ⏳ Batch Order Placement
+- ⏳ Batch Order Amendment
+- ⏳ Algo Order Support
+- ⏳ Funding Operations
+- ⏳ Sub-Account Management
 
 ---
 
-*Last Updated: 2025-12-07*
+## okx-client-gw-py Service Architecture
+
+### Domain Layer
+
+| Model | Location | Description |
+|-------|----------|-------------|
+| `Instrument` | `domain/models/instrument.py` | Trading instrument specifications |
+| `Candle` | `domain/models/candle.py` | OHLCV candlestick data |
+| `Ticker` | `domain/models/ticker.py` | Real-time market ticker |
+| `Trade` | `domain/models/trade.py` | Individual trade execution |
+| `OrderBook` | `domain/models/orderbook.py` | Order book with levels |
+| `AccountBalance` | `domain/models/account.py` | Account balance with details |
+| `AccountConfig` | `domain/models/account.py` | Account configuration |
+| `Position` | `domain/models/position.py` | Open position data |
+| `Order` | `domain/models/order.py` | Order state and details |
+| `OrderRequest` | `domain/models/order.py` | Order placement request |
+
+### Application Layer - Commands
+
+| Command | Endpoint | Auth Required |
+|---------|----------|---------------|
+| `GetInstrumentsCommand` | `GET /api/v5/public/instruments` | No |
+| `GetInstrumentCommand` | `GET /api/v5/public/instruments` | No |
+| `GetTickerCommand` | `GET /api/v5/market/ticker` | No |
+| `GetTickersCommand` | `GET /api/v5/market/tickers` | No |
+| `GetCandlesCommand` | `GET /api/v5/market/candles` | No |
+| `GetHistoryCandlesCommand` | `GET /api/v5/market/history-candles` | No |
+| `GetOrderBookCommand` | `GET /api/v5/market/books` | No |
+| `GetTradesCommand` | `GET /api/v5/market/trades` | No |
+| `GetAccountBalanceCommand` | `GET /api/v5/account/balance` | Yes |
+| `GetAccountPositionsCommand` | `GET /api/v5/account/positions` | Yes |
+| `GetAccountConfigCommand` | `GET /api/v5/account/config` | Yes |
+| `SetLeverageCommand` | `POST /api/v5/account/set-leverage` | Yes |
+| `SetPositionModeCommand` | `POST /api/v5/account/position-mode` | Yes |
+| `GetMaxAvailableSizeCommand` | `GET /api/v5/account/max-avail-size` | Yes |
+| `PlaceOrderCommand` | `POST /api/v5/trade/order` | Yes |
+| `CancelOrderCommand` | `POST /api/v5/trade/cancel-order` | Yes |
+| `AmendOrderCommand` | `POST /api/v5/trade/amend-order` | Yes |
+| `GetOrderCommand` | `GET /api/v5/trade/order` | Yes |
+| `GetPendingOrdersCommand` | `GET /api/v5/trade/orders-pending` | Yes |
+| `GetOrderHistoryCommand` | `GET /api/v5/trade/orders-history` | Yes |
+| `CancelBatchOrdersCommand` | `POST /api/v5/trade/cancel-batch-orders` | Yes |
+| `GetCurrenciesCommand` | `GET /api/v5/asset/currencies` | Partial |
+| `GetDiscountRateCommand` | `GET /api/v5/public/discount-rate-interest-free-quota` | No |
+| `GetFundingRateCommand` | `GET /api/v5/public/funding-rate` | No |
+| `GetFundingRateHistoryCommand` | `GET /api/v5/public/funding-rate-history` | No |
+
+### Application Layer - Services
+
+| Service | Description | Auth Required |
+|---------|-------------|---------------|
+| `MarketDataService` | Tickers, order books, trades, candles | No |
+| `InstrumentService` | Trading instruments lookup | No |
+| `StreamingService` | WebSocket streaming (public) | No |
+| `MultiChannelStreamingService` | Multi-instrument streaming | No |
+| `AccountService` | Balance, positions, configuration | Yes |
+| `TradeService` | Order placement and management | Yes |
+| `PublicDataService` | Currencies, discount rates, funding | Partial |
+
+### Adapters Layer
+
+| Adapter | Description |
+|---------|-------------|
+| `OkxHttpClient` | HTTP client with optional auth |
+| `OkxWebSocketClient` | WebSocket client (public) |
+| `OkxConfig` | REST API configuration |
+| `OkxWsConfig` | WebSocket configuration |
+| `OkxCredentials` | Authentication credentials |
+
+---
+
+*Last Updated: 2025-12-08*
 *Reference: https://www.okx.com/docs-v5/en/*

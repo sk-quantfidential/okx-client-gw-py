@@ -22,38 +22,52 @@ class BalanceDetail(BaseModel):
 
     Attributes:
         ccy: Currency name (e.g., "BTC", "USDT").
-        eq: Equity of the currency.
-        cash_bal: Cash balance.
-        upl: Unrealized P&L.
-        iso_eq: Isolated margin equity (for cross/isolated positions).
-        avail_eq: Available equity.
-        dis_eq: Discount equity of the currency.
         avail_bal: Available balance.
+        avail_eq: Available equity.
+        cash_bal: Cash balance.
+        coin_usd_price: Coin USD price.
+        cross_liability: Cross margin liabilities.
+        eq: Equity of the currency.
+        eq_usd: Equity in USD.
+        dis_eq: Discount equity of the currency.
         frozen_bal: Frozen balance for orders.
-        ord_frozen: Frozen for open orders.
-        iso_liab: Isolated margin liabilities.
-        spot_in_use_amt: Spot in use.
         interest: Accrued interest.
+        iso_eq: Isolated margin equity (for cross/isolated positions).
+        iso_liability: Isolated margin liabilities.
+        iso_upl: Isolated unrealized P&L.
+        liability: Liabilities.
+        max_loan: Maximum loan.
         notional_lever: Leverage for this currency.
-        stgy_eq: Strategy equity.
+        ord_frozen: Frozen for open orders.
+        spot_in_use_amt: Spot in use.
+        strategy_eq: Strategy equity.
+        upl: Unrealized P&L.
+        upl_liability: Unrealised P&L liabilities.
         update_time: Update timestamp.
     """
 
     ccy: str = Field(description="Currency name")
-    eq: Decimal = Field(description="Equity of the currency")
-    cash_bal: Decimal = Field(description="Cash balance")
-    upl: Decimal = Field(default=Decimal("0"), description="Unrealized P&L")
-    iso_eq: Decimal = Field(default=Decimal("0"), description="Isolated margin equity")
-    avail_eq: Decimal = Field(description="Available equity")
+    avail_bal: Decimal = Field(default=Decimal("0"), description="Available balance")
+    avail_eq: Decimal = Field(default=Decimal("0"), description="Available equity")
+    cash_bal: Decimal = Field(default=Decimal("0"), description="Cash balance")
+    coin_usd_price: Decimal = Field(default=Decimal("0"), description="Coin USD price")
+    cross_liability: Decimal = Field(default=Decimal("0"), description="Cross margin liabilities")
+    eq: Decimal = Field(default=Decimal("0"), description="Equity of the currency")
+    eq_usd: Decimal = Field(default=Decimal("0"), description="Equity in USD")
     dis_eq: Decimal = Field(default=Decimal("0"), description="Discount equity")
-    avail_bal: Decimal = Field(description="Available balance")
     frozen_bal: Decimal = Field(default=Decimal("0"), description="Frozen balance")
-    ord_frozen: Decimal = Field(default=Decimal("0"), description="Frozen for orders")
-    iso_liab: Decimal = Field(default=Decimal("0"), description="Isolated liabilities")
-    spot_in_use_amt: Decimal = Field(default=Decimal("0"), description="Spot in use")
     interest: Decimal = Field(default=Decimal("0"), description="Accrued interest")
+    iso_eq: Decimal = Field(default=Decimal("0"), description="Isolated margin equity")
+    iso_liability: Decimal = Field(default=Decimal("0"), description="Isolated margin liabilities")
+    iso_upl:  Decimal = Field(default=Decimal("0"), description="Isolated unrealized P&L")
+    liability: Decimal = Field(default=Decimal("0"), description="Liabilities")
+    max_loan: Decimal = Field(default=Decimal("0"), description="Maximum loan")
     notional_lever: Decimal = Field(default=Decimal("0"), description="Leverage")
-    stgy_eq: Decimal = Field(default=Decimal("0"), description="Strategy equity")
+    ord_frozen: Decimal = Field(default=Decimal("0"), description="Frozen for orders")
+    spot_in_use_amt: Decimal = Field(default=Decimal("0"), description="Spot in use")
+    strategy_eq: Decimal = Field(default=Decimal("0"), description="Strategy equity")
+    upl: Decimal = Field(default=Decimal("0"), description="Unrealized P&L")
+    upl_liability: Decimal = Field(default=Decimal("0"), description="Unrealised P&L liabilities")
     update_time: datetime | None = Field(default=None, description="Update time")
 
     model_config = {"frozen": True}
@@ -74,20 +88,27 @@ class BalanceDetail(BaseModel):
 
         return cls(
             ccy=data["ccy"],
-            eq=Decimal(data.get("eq", "0") or "0"),
-            cash_bal=Decimal(data.get("cashBal", "0") or "0"),
-            upl=Decimal(data.get("upl", "0") or "0"),
-            iso_eq=Decimal(data.get("isoEq", "0") or "0"),
-            avail_eq=Decimal(data.get("availEq", "0") or "0"),
-            dis_eq=Decimal(data.get("disEq", "0") or "0"),
             avail_bal=Decimal(data.get("availBal", "0") or "0"),
+            avail_eq=Decimal(data.get("availEq", "0") or "0"),
+            cash_bal=Decimal(data.get("cashBal", "0") or "0"),
+            coin_usd_price=Decimal(data.get("coinUsdPrice", "0") or "0"),
+            cross_liability=Decimal(data.get("crossLiab", "0") or "0"),
+            eq=Decimal(data.get("eq", "0") or "0"),
+            eq_usd = Decimal(data.get("eqUsd", "0") or "0"),
+            dis_eq=Decimal(data.get("disEq", "0") or "0"),
             frozen_bal=Decimal(data.get("frozenBal", "0") or "0"),
-            ord_frozen=Decimal(data.get("ordFrozen", "0") or "0"),
-            iso_liab=Decimal(data.get("isoLiab", "0") or "0"),
-            spot_in_use_amt=Decimal(data.get("spotInUseAmt", "0") or "0"),
             interest=Decimal(data.get("interest", "0") or "0"),
+            iso_eq=Decimal(data.get("isoEq", "0") or "0"),
+            iso_liability=Decimal(data.get("isoLiab", "0") or "0"),
+            iso_upl=Decimal(data.get("isoUpl", "0") or "0"),
+            liability=Decimal(data.get("liab", "0") or "0"),
+            max_loan=Decimal(data.get("maxLoan", "0") or "0"),
             notional_lever=Decimal(data.get("notionalLever", "0") or "0"),
-            stgy_eq=Decimal(data.get("stgyEq", "0") or "0"),
+            ord_frozen=Decimal(data.get("ordFrozen", "0") or "0"),
+            spot_in_use_amt=Decimal(data.get("spotInUseAmt", "0") or "0"),
+            strategy_eq=Decimal(data.get("stgyEq", "0") or "0"),
+            upl=Decimal(data.get("upl", "0") or "0"),
+            upl_liability=Decimal(data.get("uplLiab", "0") or "0"),
             update_time=update_time,
         )
 
@@ -264,7 +285,7 @@ class AccountConfig(BaseModel):
             uid=data.get("uid", ""),
             acct_lv=data.get("acctLv", "1"),
             pos_mode=data.get("posMode", "net_mode"),
-            auto_loan=data.get("autoLoan", "false").lower() == "true",
+            auto_loan=str(data.get("autoLoan", "false")).lower() == "true",
             greeks_type=data.get("greeksType", "PA"),
             level=data.get("level", ""),
             level_tmp=data.get("levelTmp", ""),
@@ -278,7 +299,7 @@ class AccountConfig(BaseModel):
             ip=data.get("ip", ""),
             perm=data.get("perm", ""),
             label=data.get("label", ""),
-            enable_spot_borrow=data.get("enableSpotBorrow", "false").lower() == "true",
+            enable_spot_borrow=str(data.get("enableSpotBorrow", "false")).lower() == "true",
         )
 
     @property

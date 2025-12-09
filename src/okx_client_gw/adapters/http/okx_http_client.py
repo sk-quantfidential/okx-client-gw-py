@@ -9,6 +9,7 @@ from __future__ import annotations
 import json
 from typing import TYPE_CHECKING, Any
 
+from client_gw_core import get_logger
 from client_gw_core.adapters.http import HttpClient, HttpClientConfig
 from client_gw_core.adapters.http.config import RetryConfig
 from client_gw_core.domain.resilience import BackoffConfig, FixedDelayConfig
@@ -22,6 +23,7 @@ if TYPE_CHECKING:
 
     import httpx
 
+logger = get_logger(__name__)
 
 class OkxHttpClient(HttpClient):
     """Async HTTP client for OKX REST API.
@@ -163,7 +165,9 @@ class OkxHttpClient(HttpClient):
         if params:
             kwargs["params"] = dict(params)
 
+        logger.info([endpoint, str(kwargs)])
         response = await self.post(endpoint, **kwargs)
+        logger.info(str(response))
         return self._parse_response(response)
 
     def _parse_response(self, response: httpx.Response) -> list[Any]:
