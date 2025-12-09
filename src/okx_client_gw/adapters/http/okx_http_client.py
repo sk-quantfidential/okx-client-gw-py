@@ -1,17 +1,20 @@
 """OKX HTTP client implementation.
 
 Extends the generic HttpClient from client-gw-core with OKX-specific
-response parsing and error handling.
+response parsing, error handling, and authentication support.
 """
 
 from __future__ import annotations
 
+import json
 from typing import TYPE_CHECKING, Any
 
+from client_gw_core import get_logger
 from client_gw_core.adapters.http import HttpClient, HttpClientConfig
 from client_gw_core.adapters.http.config import RetryConfig
 from client_gw_core.domain.resilience import BackoffConfig, FixedDelayConfig
 
+from okx_client_gw.core.auth import OkxCredentials
 from okx_client_gw.core.config import DEFAULT_CONFIG, OkxConfig
 from okx_client_gw.core.exceptions import OkxApiError
 
@@ -20,6 +23,7 @@ if TYPE_CHECKING:
 
     import httpx
 
+logger = get_logger(__name__)
 
 class OkxHttpClient(HttpClient):
     """Async HTTP client for OKX REST API.
@@ -28,9 +32,9 @@ class OkxHttpClient(HttpClient):
     - OKX response format parsing (code/msg/data)
     - Rate limiting for public endpoints (20 req/sec default)
     - Retry logic for 5xx errors with exponential backoff
-    - No authentication (public endpoints only for now)
+    - Optional authentication for private endpoints
 
-    Example:
+    Example (public endpoints):
         async with OkxHttpClient() as client:
             # Raw response
             response = await client.get("/api/v5/market/tickers", params={"instType": "SPOT"})
@@ -39,18 +43,25 @@ class OkxHttpClient(HttpClient):
             # Parsed data (raises OkxApiError on error)
             tickers = await client.get_data("/api/v5/market/tickers", params={"instType": "SPOT"})
 
+    Example (private endpoints):
+        credentials = OkxCredentials.from_env()
+        async with OkxHttpClient(credentials=credentials) as client:
+            # Authenticated request
+            balance = await client.get_data_auth("/api/v5/account/balance")
+
     OKX Response Format:
         Success: {"code": "0", "msg": "", "data": [...]}
         Error: {"code": "50000", "msg": "Error message", "data": []}
     """
 
-    # OKX public API rate limits
+    # OKX public API rate limits (private is 10 req/sec but we use same limiter)
     DEFAULT_REQUESTS_PER_SECOND = 20.0
 
     def __init__(
         self,
         config: OkxConfig | None = None,
         *,
+        credentials: OkxCredentials | None = None,
         requests_per_second: float | None = None,
         timeout: float | None = None,
         max_retry_attempts: int | None = None,
@@ -59,11 +70,13 @@ class OkxHttpClient(HttpClient):
 
         Args:
             config: OKX configuration (uses defaults if not provided)
+            credentials: API credentials for authenticated requests (optional)
             requests_per_second: Override rate limit (default: 20.0)
             timeout: Override request timeout (default: 30.0)
             max_retry_attempts: Override max retry attempts (default: 3)
         """
         okx_config = config or DEFAULT_CONFIG
+        self._credentials = credentials
 
         # Use provided values or fall back to config defaults
         rps = requests_per_second or okx_config.requests_per_second
@@ -152,7 +165,9 @@ class OkxHttpClient(HttpClient):
         if params:
             kwargs["params"] = dict(params)
 
+        logger.info([endpoint, str(kwargs)])
         response = await self.post(endpoint, **kwargs)
+        logger.info(str(response))
         return self._parse_response(response)
 
     def _parse_response(self, response: httpx.Response) -> list[Any]:
@@ -189,6 +204,125 @@ class OkxHttpClient(HttpClient):
             raise OkxApiError(code=code, msg=msg, data=data)
 
         return data
+
+    async def get_data_auth(
+        self,
+        endpoint: str,
+        *,
+        params: Mapping[str, Any] | None = None,
+    ) -> list[Any]:
+        """Make an authenticated GET request and return parsed data.
+
+        Requires credentials to be set during client initialization.
+
+        Args:
+            endpoint: API endpoint path (e.g., "/api/v5/account/balance")
+            params: Query parameters
+
+        Returns:
+            The "data" field from OKX response
+
+        Raises:
+            OkxApiError: If OKX returns an error response or no credentials
+            httpx.HTTPError: On HTTP errors
+        """
+        self._require_credentials()
+
+        # Build the full request path with query string for signing
+        request_path = endpoint
+        if params:
+            query_string = "&".join(f"{k}={v}" for k, v in params.items())
+            request_path = f"{endpoint}?{query_string}"
+
+        # Get auth headers
+        auth_headers = self._credentials.get_auth_headers(
+            method="GET",
+            request_path=request_path,
+            body="",
+            simulated=self._okx_config.use_demo,
+        )
+
+        response = await self.get(
+            endpoint,
+            params=dict(params) if params else None,
+            headers=auth_headers,
+        )
+        return self._parse_response(response)
+
+    async def post_data_auth(
+        self,
+        endpoint: str,
+        *,
+        json_data: Any = None,
+        params: Mapping[str, Any] | None = None,
+    ) -> list[Any]:
+        """Make an authenticated POST request and return parsed data.
+
+        Requires credentials to be set during client initialization.
+
+        Args:
+            endpoint: API endpoint path
+            json_data: JSON body data
+            params: Query parameters
+
+        Returns:
+            The "data" field from OKX response
+
+        Raises:
+            OkxApiError: If OKX returns an error response or no credentials
+            httpx.HTTPError: On HTTP errors
+        """
+        self._require_credentials()
+
+        # Build the request path with query string for signing
+        request_path = endpoint
+        if params:
+            query_string = "&".join(f"{k}={v}" for k, v in params.items())
+            request_path = f"{endpoint}?{query_string}"
+
+        # Serialize body for signing
+        body = json.dumps(json_data) if json_data is not None else ""
+
+        # Get auth headers
+        auth_headers = self._credentials.get_auth_headers(
+            method="POST",
+            request_path=request_path,
+            body=body,
+            simulated=self._okx_config.use_demo,
+        )
+
+        kwargs: dict[str, Any] = {"headers": auth_headers}
+        if json_data is not None:
+            kwargs["json"] = json_data
+        if params:
+            kwargs["params"] = dict(params)
+
+        response = await self.post(endpoint, **kwargs)
+        return self._parse_response(response)
+
+    def _require_credentials(self) -> None:
+        """Ensure credentials are available for authenticated requests.
+
+        Raises:
+            OkxApiError: If credentials are not set.
+        """
+        if self._credentials is None:
+            raise OkxApiError(
+                code="auth_error",
+                msg="Credentials required for authenticated requests. "
+                "Pass credentials=OkxCredentials(...) to OkxHttpClient.",
+                data=[],
+            )
+
+    @property
+    def credentials(self) -> OkxCredentials | None:
+        """Get the configured credentials (if any)."""
+        return self._credentials
+
+    @property
+    def has_credentials(self) -> bool:
+        """Check if credentials are configured."""
+        return self._credentials is not None
 
     @property
     def okx_config(self) -> OkxConfig:

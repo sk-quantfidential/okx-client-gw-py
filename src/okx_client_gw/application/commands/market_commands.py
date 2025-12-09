@@ -158,7 +158,7 @@ class GetCandlesCommand(OkxQueryCommand[list[Candle]]):
         """
         params: dict[str, str] = {
             "instId": self._inst_id,
-            "bar": self._bar.value,
+            "bar": self._bar.value if hasattr(self._bar, "value") else str(self._bar),
             "limit": str(self._limit),
         }
 
@@ -226,7 +226,7 @@ class GetHistoryCandlesCommand(OkxQueryCommand[list[Candle]]):
         """
         params: dict[str, str] = {
             "instId": self._inst_id,
-            "bar": self._bar.value,
+            "bar": self._bar.value if hasattr(self._bar, "value") else str(self._bar),
             "limit": str(self._limit),
         }
 
@@ -250,7 +250,7 @@ class GetOrderBookCommand(OkxQueryCommand[OrderBook]):
         book = await cmd.invoke(client)
     """
 
-    VALID_DEPTHS = {1, 5, 20, 50, 100, 400}
+    VALID_DEPTHS = {1, 5, 10, 20, 50, 100, 400}
 
     def __init__(
         self,

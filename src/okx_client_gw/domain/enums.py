@@ -172,3 +172,76 @@ class OrderBookAction(str, Enum):
 
     SNAPSHOT = "snapshot"
     UPDATE = "update"
+
+
+class OrderType(str, Enum):
+    """Order type.
+
+    See: https://www.okx.com/docs-v5/en/#order-book-trading-trade-post-place-order
+    """
+
+    MARKET = "market"
+    LIMIT = "limit"
+    POST_ONLY = "post_only"
+    FOK = "fok"  # Fill or kill
+    IOC = "ioc"  # Immediate or cancel
+    OPTIMAL_LIMIT_IOC = "optimal_limit_ioc"
+    MMP = "mmp"  # Market maker protection
+    MMP_AND_POST_ONLY = "mmp_and_post_only"
+
+
+class OrderState(str, Enum):
+    """Order state/status.
+
+    See: https://www.okx.com/docs-v5/en/#order-book-trading-trade-get-order-details
+    """
+
+    LIVE = "live"  # Order is active
+    PARTIALLY_FILLED = "partially_filled"
+    FILLED = "filled"
+    CANCELED = "canceled"
+    MMP_CANCELED = "mmp_canceled"  # Canceled by market maker protection
+
+
+class PositionSide(str, Enum):
+    """Position side for hedge mode.
+
+    In net mode, use PosSide.NET.
+    In long/short mode, use LONG or SHORT.
+    """
+
+    LONG = "long"
+    SHORT = "short"
+    NET = "net"
+
+
+class TradeMode(str, Enum):
+    """Trade mode (margin mode).
+
+    See: https://www.okx.com/docs-v5/en/#order-book-trading-trade-post-place-order
+    """
+
+    CROSS = "cross"  # Cross margin
+    ISOLATED = "isolated"  # Isolated margin
+    CASH = "cash"  # Non-margin (spot)
+
+
+class AlgoOrderType(str, Enum):
+    """Algo order type.
+
+    See: https://www.okx.com/docs-v5/en/#order-book-trading-algo-trading-post-place-algo-order
+    """
+
+    CONDITIONAL = "conditional"  # Stop loss / take profit
+    OCO = "oco"  # One-cancels-other
+    TRIGGER = "trigger"  # Trigger order
+    MOVE_ORDER_STOP = "move_order_stop"  # Trailing stop
+    ICEBERG = "iceberg"
+    TWAP = "twap"
+
+
+class MarginMode(str, Enum):
+    """Margin mode for the account or position."""
+
+    CROSS = "cross"
+    ISOLATED = "isolated"

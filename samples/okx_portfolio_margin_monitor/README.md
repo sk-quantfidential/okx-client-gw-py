@@ -8,23 +8,23 @@ This monitor is designed for the classic funding rate arbitrage:
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
-│                    DELTA-NEUTRAL CARRY TRADE                     │
+│                    DELTA-NEUTRAL CARRY TRADE                    │
 ├─────────────────────────────────────────────────────────────────┤
-│                                                                  │
-│   SPOT LEG                        PERP LEG                       │
-│   ────────                        ────────                       │
-│   Hold BTC                        Short BTC-USDT-SWAP            │
-│   (Collateral)                    (Earn funding)                 │
-│                                                                  │
+│                                                                 │
+│   SPOT LEG                        PERP LEG                      │
+│   ────────                        ────────                      │
+│   Hold BTC                        Short BTC-USDT-SWAP           │
+│   (Collateral)                    (Earn funding)                │
+│                                                                 │
 │   ┌─────────────┐                 ┌─────────────┐               │
-│   │   1 BTC     │ ◄───HEDGE───► │  -1 BTC     │               │
+│   │   1 BTC     │  ◄───HEDGE───►  │  -1 BTC     │               │
 │   │   SPOT      │                 │  PERP       │               │
 │   └─────────────┘                 └─────────────┘               │
-│         │                               │                        │
-│         ▼                               ▼                        │
-│   Contributes to                  Consumes margin                │
-│   adjEq @ 97%                     but earns funding              │
-│                                                                  │
+│         │                               │                       │
+│         ▼                               ▼                       │
+│   Contributes to                  Consumes margin               │
+│   adjEq @ 97%                     but earns funding             │
+│                                                                 │
 └─────────────────────────────────────────────────────────────────┘
 ```
 

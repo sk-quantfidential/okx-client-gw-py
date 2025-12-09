@@ -240,6 +240,91 @@ async with OkxHttpClient() as client:
 
 ---
 
-*Last Updated: 2025-12-07*
-*Completed: Epic OKX-0001 Milestones 1-10 (Full HTTP/WebSocket implementation + CLI + Testing)*
-*Status: Epic Complete - 128 tests passing (105 unit + 16 integration + 7 BDD)*
+## Epic OKX-0002: OKX Private APIs and Examples
+
+**Status:** Complete
+**Target:** v0.2.0
+**Depends On:** Epic OKX-0001
+
+Extend the OKX client with authenticated (private) API support, comprehensive examples,
+and documentation for trading operations.
+
+---
+
+### Milestone 11: Authentication Infrastructure ✅ COMPLETED
+
+**Status:** ✅ Completed
+
+**Completed:**
+
+- [x] Create core/auth.py with OkxCredentials and HMAC-SHA256 signing
+- [x] Integrate authentication into OkxHttpClient for private endpoints
+- [x] Support API key, secret, and passphrase credentials
+
+---
+
+### Milestone 12-14: Domain Models ✅ COMPLETED
+
+**Status:** ✅ Completed
+
+**Completed:**
+
+- [x] Create domain/models/account.py (AccountBalance, BalanceDetail)
+- [x] Create domain/models/order.py (Order, OrderResult)
+- [x] Create domain/models/position.py (Position)
+- [x] Create domain/models/funding_rate.py (FundingRate)
+- [x] Create domain/models/mark_price.py (MarkPrice)
+- [x] Extend domain/enums.py with OrderSide, OrderType, TdMode, PosSide, MgnMode
+
+---
+
+### Milestone 15: Application Commands and Services ✅ COMPLETED
+
+**Status:** ✅ Completed
+
+**Completed:**
+
+- [x] Create account_commands.py (GetAccountBalanceCommand, GetPositionsCommand, etc.)
+- [x] Create trade_commands.py (PlaceOrderCommand, CancelOrderCommand, etc.)
+- [x] Create public_commands.py (GetFundingRateCommand, GetMarkPriceCommand, etc.)
+- [x] Create AccountService, TradeService, PublicDataService
+
+---
+
+### Milestone 16: Example Notebooks ✅ COMPLETED
+
+**Status:** ✅ Completed
+
+**Completed:**
+
+- [x] Create notebooks/01_getting_started.ipynb
+- [x] Create notebooks/02_trading_derivatives.ipynb
+- [x] Create notebooks/03_market_data_exploration.ipynb
+
+---
+
+### Milestone 17: Sample Refactoring ✅ COMPLETED
+
+**Status:** ✅ Completed
+
+**Completed:**
+
+- [x] Refactor samples/okx_portfolio_margin_monitor/okx_margin_monitor_gw.py
+- [x] Refactor samples/okx_multicurrency_margin_monitor/okx_margin_monitor_gw.py
+
+---
+
+### Milestone 18: Market Maker Specification ✅ COMPLETED
+
+**Status:** ✅ Completed
+
+**Completed:**
+
+- [x] Create docs/specs/market_maker_adaptation.md
+- [x] Update docs/architecture/OKX_API_FUNCTIONAL_DECOMPOSITION.md
+
+---
+
+*Last Updated: 2025-12-08*
+*Completed: Epic OKX-0001 Milestones 1-10, Epic OKX-0002 Milestones 11-18*
+*Status: Both Epics Complete - 128 tests passing (105 unit + 16 integration + 7 BDD)*
