@@ -4,9 +4,10 @@ from decimal import Decimal
 
 import pytest
 
-from samples.okx_market_maker.context.market_context import MarketContext
-from samples.okx_market_maker.models.amend_request import AmendRequest
-from samples.okx_market_maker.models.strategy_order import OrderState, StrategyOrder
+from samples.okx_market_maker.application.context.market_context import MarketContext
+from samples.okx_market_maker.domain.enums import OrderState
+from samples.okx_market_maker.domain.models.amend_request import AmendRequest
+from samples.okx_market_maker.domain.models.strategy_order import StrategyOrder
 
 
 class TestMarketContext:

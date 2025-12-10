@@ -47,7 +47,7 @@ export MM_USE_DEMO="true"
 
 ### YAML Configuration
 
-Edit `config/params.yaml` or provide a custom config file:
+Edit `core/config/params.yaml` or provide a custom config file:
 
 ```yaml
 # Instrument settings
@@ -83,31 +83,54 @@ max_spread_pct: "0.01"
 
 ## Architecture
 
+Clean Architecture with layered structure:
+
 ```
 samples/okx_market_maker/
-├── main.py                 # Entry point and orchestrator
-├── config/
-│   ├── settings.py         # Pydantic Settings (YAML + env)
-│   └── params.yaml         # Default parameters
-├── context/
-│   └── market_context.py   # Centralized state (replaces globals)
-├── models/
-│   └── strategy_order.py   # Order state machine
-├── strategy/
-│   ├── strategy_protocol.py    # Protocol for DI
-│   ├── base_strategy.py        # Abstract base
-│   ├── sample_mm_strategy.py   # Grid strategy
-│   ├── inventory_skew_strategy.py
-│   └── volatility_strategy.py
-├── services/
-│   ├── order_handler.py    # Order lifecycle management
-│   └── health_checker.py   # Data freshness monitoring
-├── risk/
-│   └── risk_calculator.py  # P&L and risk metrics
-└── utils/
-    ├── instrument_util.py  # Price/size rounding
-    └── id_generator.py     # Client order IDs
+├── main.py                          # Thin entry point
+├── domain/                          # Pure business logic (no external deps)
+│   ├── enums.py                     # OrderState enum
+│   ├── models/
+│   │   ├── strategy_order.py        # Order state machine
+│   │   ├── amend_request.py         # Amendment request POD
+│   │   └── quote.py                 # Quote and StrategyDecision
+│   ├── services/
+│   │   └── risk_calculator.py       # P&L and risk metrics
+│   └── strategies/
+│       ├── base_strategy.py         # Abstract base
+│       ├── grid_strategy.py         # Grid strategy (formerly sample_mm_strategy)
+│       ├── inventory_skew_strategy.py
+│       └── volatility_strategy.py
+├── ports/                           # Interface definitions
+│   └── strategy.py                  # StrategyProtocol
+├── adapters/                        # External integrations (placeholder)
+├── application/                     # Use cases and orchestration
+│   ├── context/
+│   │   └── market_context.py        # Centralized state container
+│   └── services/
+│       ├── order_handler.py         # Order lifecycle management
+│       └── health_checker.py        # Data freshness monitoring
+├── core/                            # Infrastructure
+│   ├── config/
+│   │   ├── settings.py              # Pydantic Settings (YAML + env)
+│   │   └── params.yaml              # Default parameters
+│   └── utils/
+│       ├── instrument_util.py       # Price/size rounding
+│       └── id_generator.py          # Client order IDs
+├── presentation/                    # CLI entry points
+│   └── cli.py                       # MarketMaker orchestrator
+└── tests/
+    ├── test_context.py
+    └── test_strategy.py
 ```
+
+**Dependency rules**:
+- `domain/` → depends on nothing (pure Python + Pydantic)
+- `ports/` → depends only on domain/
+- `adapters/` → implements ports/, uses domain/, core/
+- `application/` → depends on domain/, ports/, core/
+- `presentation/` → depends on application/, domain/, core/
+- `core/` → depends on nothing (self-contained)
 
 ## Strategies
 
@@ -150,8 +173,9 @@ Includes volatility circuit breaker that halts trading in extreme conditions.
 ### Custom Strategy
 
 ```python
-from samples.okx_market_maker.strategy.base_strategy import BaseStrategy
-from samples.okx_market_maker.strategy.strategy_protocol import Quote
+from samples.okx_market_maker.domain.strategies.base_strategy import BaseStrategy
+from samples.okx_market_maker.domain.models.quote import Quote
+from samples.okx_market_maker.application.context.market_context import MarketContext
 
 class MyStrategy(BaseStrategy):
     def compute_quotes(self, context: MarketContext) -> list[Quote]:
