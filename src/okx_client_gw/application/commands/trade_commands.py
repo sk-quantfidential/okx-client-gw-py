@@ -372,6 +372,99 @@ class AmendOrderCommand(OkxMutationCommand[dict]):
         return data[0] if data else {}
 
 
+class PlaceBatchOrdersCommand(OkxMutationCommand[list[dict]]):
+    """Place multiple orders at once.
+
+    API: POST /api/v5/trade/batch-orders (AUTH REQUIRED)
+
+    Places up to 20 orders in a single request.
+
+    Example:
+        orders = [
+            OrderRequest(inst_id="BTC-USDT", td_mode=TradeMode.CASH, ...),
+            OrderRequest(inst_id="ETH-USDT", td_mode=TradeMode.CASH, ...),
+        ]
+        cmd = PlaceBatchOrdersCommand(orders)
+        results = await cmd.invoke(client)
+    """
+
+    MAX_BATCH_SIZE = 20
+
+    def __init__(self, orders: list[OrderRequest]) -> None:
+        """Initialize command.
+
+        Args:
+            orders: List of OrderRequest objects
+
+        Raises:
+            ValueError: If batch size exceeds limit
+        """
+        if len(orders) > self.MAX_BATCH_SIZE:
+            raise ValueError(f"Maximum {self.MAX_BATCH_SIZE} orders per batch")
+        self._orders = orders
+
+    async def invoke(self, client: OkxHttpClientProtocol) -> list[dict]:
+        """Place batch orders.
+
+        Args:
+            client: OKX HTTP client with credentials
+
+        Returns:
+            List of dicts with ordId, clOrdId, sCode, sMsg for each order
+        """
+        order_data = [order.to_okx_dict() for order in self._orders]
+        return await client.post_data_auth(
+            "/api/v5/trade/batch-orders",
+            json_data=order_data,
+        )
+
+
+class AmendBatchOrdersCommand(OkxMutationCommand[list[dict]]):
+    """Amend multiple orders at once.
+
+    API: POST /api/v5/trade/amend-batch-orders (AUTH REQUIRED)
+
+    Amends up to 20 orders in a single request.
+
+    Example:
+        amendments = [
+            {"instId": "BTC-USDT", "ordId": "123", "newPx": "51000"},
+            {"instId": "ETH-USDT", "clOrdId": "client_456", "newSz": "2"},
+        ]
+        cmd = AmendBatchOrdersCommand(amendments)
+        results = await cmd.invoke(client)
+    """
+
+    MAX_BATCH_SIZE = 20
+
+    def __init__(self, amendments: list[dict]) -> None:
+        """Initialize command.
+
+        Args:
+            amendments: List of dicts with instId, ordId/clOrdId, and newPx/newSz
+
+        Raises:
+            ValueError: If batch size exceeds limit
+        """
+        if len(amendments) > self.MAX_BATCH_SIZE:
+            raise ValueError(f"Maximum {self.MAX_BATCH_SIZE} amendments per batch")
+        self._amendments = amendments
+
+    async def invoke(self, client: OkxHttpClientProtocol) -> list[dict]:
+        """Amend batch orders.
+
+        Args:
+            client: OKX HTTP client with credentials
+
+        Returns:
+            List of dicts with ordId, clOrdId, reqId, sCode, sMsg for each order
+        """
+        return await client.post_data_auth(
+            "/api/v5/trade/amend-batch-orders",
+            json_data=self._amendments,
+        )
+
+
 class CancelBatchOrdersCommand(OkxMutationCommand[list[dict]]):
     """Cancel multiple orders at once.
 

@@ -10,12 +10,14 @@ from decimal import Decimal
 from typing import TYPE_CHECKING
 
 from okx_client_gw.application.commands.trade_commands import (
+    AmendBatchOrdersCommand,
     AmendOrderCommand,
     CancelBatchOrdersCommand,
     CancelOrderCommand,
     GetOrderCommand,
     GetOrderHistoryCommand,
     GetPendingOrdersCommand,
+    PlaceBatchOrdersCommand,
     PlaceOrderCommand,
 )
 from okx_client_gw.domain.enums import (
@@ -179,6 +181,30 @@ class TradeService:
             Dict with ordId, clOrdId, sCode, sMsg
         """
         cmd = CancelOrderCommand(inst_id, ord_id=ord_id, cl_ord_id=cl_ord_id)
+        return await cmd.invoke(self._client)
+
+    async def place_batch_orders(self, orders: list[OrderRequest]) -> list[dict]:
+        """Place multiple orders at once.
+
+        Args:
+            orders: List of OrderRequest objects (max 20)
+
+        Returns:
+            List of result dicts with ordId, clOrdId, sCode, sMsg
+        """
+        cmd = PlaceBatchOrdersCommand(orders)
+        return await cmd.invoke(self._client)
+
+    async def amend_batch_orders(self, amendments: list[dict]) -> list[dict]:
+        """Amend multiple orders at once.
+
+        Args:
+            amendments: List of dicts with instId, ordId/clOrdId, newPx/newSz
+
+        Returns:
+            List of result dicts with ordId, clOrdId, reqId, sCode, sMsg
+        """
+        cmd = AmendBatchOrdersCommand(amendments)
         return await cmd.invoke(self._client)
 
     async def cancel_batch_orders(self, orders: list[dict]) -> list[dict]:

@@ -3,6 +3,11 @@
 from okx_client_gw.application.services.account_service import AccountService
 from okx_client_gw.application.services.instrument_service import InstrumentService
 from okx_client_gw.application.services.market_service import MarketDataService
+from okx_client_gw.application.services.private_streaming_service import (
+    BalanceAndPosition,
+    MultiChannelPrivateStreamingService,
+    PrivateStreamingService,
+)
 from okx_client_gw.application.services.public_data_service import PublicDataService
 from okx_client_gw.application.services.streaming_service import (
     MultiChannelStreamingService,
@@ -16,6 +21,10 @@ __all__ = [
     "MarketDataService",
     "StreamingService",
     "MultiChannelStreamingService",
+    # Private streaming services
+    "PrivateStreamingService",
+    "MultiChannelPrivateStreamingService",
+    "BalanceAndPosition",
     # Account services
     "AccountService",
     # Trade services
