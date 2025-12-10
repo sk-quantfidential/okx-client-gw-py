@@ -7,7 +7,7 @@ from __future__ import annotations
 
 import time
 import uuid
-from typing import Iterator
+from collections.abc import Iterator
 
 
 def generate_client_order_id(prefix: str = "mm") -> str:

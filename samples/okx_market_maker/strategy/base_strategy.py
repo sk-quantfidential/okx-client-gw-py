@@ -213,7 +213,7 @@ class BaseStrategy(ABC):
 
         return False, None
 
-    def on_fill(
+    def on_fill(  # noqa: B027
         self,
         order: StrategyOrder,
         fill_size: Decimal,
@@ -221,25 +221,23 @@ class BaseStrategy(ABC):
     ) -> None:
         """Handle order fill event.
 
-        Updates P&L tracking.
+        Optional override for subclasses. Default does nothing.
+        P&L tracking is done in MarketContext.
 
         Args:
             order: The order that was filled
             fill_size: Size of this fill
             fill_price: Price of this fill
         """
-        # P&L tracking is done in MarketContext
-        pass
 
-    def on_cancel(self, order: StrategyOrder) -> None:
+    def on_cancel(self, order: StrategyOrder) -> None:  # noqa: B027
         """Handle order cancellation event.
 
-        Default implementation does nothing.
+        Optional override for subclasses. Default does nothing.
 
         Args:
             order: The order that was canceled
         """
-        pass
 
     @property
     def total_pnl(self) -> Decimal:

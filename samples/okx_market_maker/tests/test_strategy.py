@@ -8,7 +8,6 @@ from samples.okx_market_maker.config.settings import MarketMakerSettings
 from samples.okx_market_maker.context.market_context import MarketContext
 from samples.okx_market_maker.strategy.inventory_skew_strategy import InventorySkewStrategy
 from samples.okx_market_maker.strategy.sample_mm_strategy import SampleMMStrategy
-from samples.okx_market_maker.strategy.strategy_protocol import Quote
 from samples.okx_market_maker.strategy.volatility_strategy import VolatilityStrategy
 
 

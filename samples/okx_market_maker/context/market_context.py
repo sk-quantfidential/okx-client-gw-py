@@ -18,7 +18,6 @@ if TYPE_CHECKING:
     from okx_client_gw.domain.models.orderbook import OrderBook
     from okx_client_gw.domain.models.position import Position
     from okx_client_gw.domain.models.ticker import Ticker
-
     from samples.okx_market_maker.models.strategy_order import StrategyOrder
 
 

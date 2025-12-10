@@ -10,8 +10,8 @@ from decimal import Decimal
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from samples.okx_market_maker.context.market_context import MarketContext
     from samples.okx_market_maker.config.settings import MarketMakerSettings
+    from samples.okx_market_maker.context.market_context import MarketContext
 
 
 @dataclass(frozen=True)

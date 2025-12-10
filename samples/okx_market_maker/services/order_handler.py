@@ -5,7 +5,6 @@ Manages order lifecycle including placement, cancellation, and state updates.
 
 from __future__ import annotations
 
-from decimal import Decimal
 from typing import TYPE_CHECKING
 
 from client_gw_core import get_logger
@@ -17,7 +16,6 @@ from samples.okx_market_maker.utils.id_generator import OrderIdGenerator
 if TYPE_CHECKING:
     from okx_client_gw.application.services.trade_service import TradeService
     from okx_client_gw.domain.models.order import Order, OrderRequest
-
     from samples.okx_market_maker.config.settings import MarketMakerSettings
     from samples.okx_market_maker.context.market_context import MarketContext
 

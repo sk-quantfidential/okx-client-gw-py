@@ -165,7 +165,7 @@ class OkxPrivateWsClient(OkxWsClient):
             else:
                 raise OkxAuthenticationError("Login failed - received error response")
 
-        except asyncio.TimeoutError as e:
+        except TimeoutError as e:
             raise OkxAuthenticationError(
                 f"Login timed out after {self.LOGIN_TIMEOUT}s"
             ) from e
@@ -338,7 +338,7 @@ class OkxPrivateWsClient(OkxWsClient):
 
         message = {"op": "subscribe", "args": [arg]}
         await self._send_json(message)
-        logger.info(f"Subscribed to orders-algo channel")
+        logger.info("Subscribed to orders-algo channel")
 
     async def disconnect(self) -> None:
         """Disconnect from OKX Private WebSocket."""
