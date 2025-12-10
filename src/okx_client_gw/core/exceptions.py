@@ -74,6 +74,23 @@ class OkxWebSocketError(OkxError):
         super().__init__(message)
 
 
+class OkxAuthenticationError(OkxError):
+    """Exception raised when WebSocket authentication fails.
+
+    Attributes:
+        reason: Description of the authentication failure.
+        event: The WebSocket event that caused the error (if any).
+    """
+
+    def __init__(self, reason: str, event: str | None = None):
+        self.reason = reason
+        self.event = event
+        message = f"OKX Authentication Error: {reason}"
+        if event:
+            message += f" (Event: {event})"
+        super().__init__(message)
+
+
 class OkxRateLimitError(OkxApiError):
     """Exception raised when rate limit is exceeded.
 
