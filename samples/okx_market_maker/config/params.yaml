@@ -1,0 +1,40 @@
+# OKX Market Maker Configuration
+# Override any setting with environment variables using MM_ prefix
+# Example: MM_INST_ID=ETH-USDT
+
+# Instrument settings
+inst_id: "BTC-USDT"
+trading_mode: "cash"  # cash (spot), cross, or isolated
+use_demo: true        # Use demo trading environment
+
+# Strategy type: grid, inventory_skew, or volatility
+strategy_type: "grid"
+
+# Strategy parameters
+step_pct: "0.001"           # Price step between orders (0.1%)
+num_orders_per_side: 5      # Orders per side (max 20)
+single_order_size: "0.001"  # Size per order
+single_order_size_multiplier: "1.0"
+
+# Risk limits
+max_net_buy: "100.0"         # Maximum net buy position
+max_net_sell: "100.0"        # Maximum net sell position
+max_position_value_usd: "10000.0"
+
+# Health check thresholds (seconds)
+orderbook_max_delay_sec: 5.0
+account_max_delay_sec: 10.0
+position_max_delay_sec: 10.0
+
+# Main loop interval (seconds)
+main_loop_interval_sec: 1.0
+
+# Inventory skew strategy settings
+skew_factor: "0.5"      # Aggressiveness of inventory skew (0-1)
+max_skew_pct: "0.005"   # Maximum price skew (0.5%)
+
+# Volatility strategy settings
+volatility_lookback: 20       # Candles for volatility calc
+volatility_multiplier: "2.0"  # Spread multiplier
+min_spread_pct: "0.001"       # Minimum spread (0.1%)
+max_spread_pct: "0.01"        # Maximum spread (1%)
