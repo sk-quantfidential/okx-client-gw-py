@@ -12,6 +12,7 @@ from typing import TYPE_CHECKING, Protocol, runtime_checkable
 
 if TYPE_CHECKING:
     from samples.okx_market_maker.context.market_context import MarketContext
+    from samples.okx_market_maker.models.amend_request import AmendRequest
     from samples.okx_market_maker.models.strategy_order import StrategyOrder
 
 
@@ -38,14 +39,14 @@ class StrategyDecision:
 
     Attributes:
         orders_to_place: New orders to place
-        orders_to_amend: Existing orders to amend (cl_ord_id -> new price/size)
+        orders_to_amend: Existing orders to amend (typed AmendRequest objects)
         orders_to_cancel: Orders to cancel by cl_ord_id
         should_halt: Whether trading should be halted
         halt_reason: Reason for halting if should_halt is True
     """
 
     orders_to_place: list[Quote] = field(default_factory=list)
-    orders_to_amend: dict[str, dict[str, Decimal]] = field(default_factory=dict)
+    orders_to_amend: list[AmendRequest] = field(default_factory=list)
     orders_to_cancel: list[str] = field(default_factory=list)
     should_halt: bool = False
     halt_reason: str | None = None

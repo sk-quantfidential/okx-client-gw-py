@@ -9,6 +9,7 @@ from typing import TYPE_CHECKING
 
 from client_gw_core import get_logger
 
+from samples.okx_market_maker.models.amend_request import AmendRequest
 from samples.okx_market_maker.models.strategy_order import OrderState, StrategyOrder
 from samples.okx_market_maker.strategy.strategy_protocol import Quote, StrategyDecision
 from samples.okx_market_maker.utils.id_generator import OrderIdGenerator
@@ -68,7 +69,7 @@ class OrderHandler:
     async def execute_decision(self, decision: StrategyDecision) -> None:
         """Execute a strategy decision.
 
-        Places new orders, cancels unwanted orders.
+        Places new orders, amends existing orders, cancels unwanted orders.
 
         Args:
             decision: Strategy decision to execute
@@ -77,7 +78,11 @@ class OrderHandler:
         if decision.orders_to_cancel:
             await self._cancel_orders(decision.orders_to_cancel)
 
-        # Then place new orders
+        # Then amend existing orders
+        if decision.orders_to_amend:
+            await self._amend_orders(decision.orders_to_amend)
+
+        # Finally place new orders
         if decision.orders_to_place:
             await self._place_orders(decision.orders_to_place)
 
@@ -211,6 +216,64 @@ class OrderHandler:
 
             except Exception as e:
                 logger.error(f"Failed to cancel batch: {e}")
+
+    async def _amend_orders(self, amend_requests: list[AmendRequest]) -> None:
+        """Amend existing orders.
+
+        Batches amend requests up to MAX_BATCH_SIZE per request.
+
+        Args:
+            amend_requests: Typed amend requests with new price/size
+        """
+        if not amend_requests:
+            return
+
+        # Mark orders as amending
+        for amend in amend_requests:
+            order = self._context.get_order(amend.cl_ord_id) if amend.cl_ord_id else None
+            if order and order.is_active:
+                order.mark_amending()
+
+        # Amend in batches
+        for i in range(0, len(amend_requests), self.MAX_BATCH_SIZE):
+            batch = amend_requests[i : i + self.MAX_BATCH_SIZE]
+            batch_dicts = [amend.to_okx_dict() for amend in batch]
+
+            try:
+                results = await self._trade_service.amend_batch_orders(batch_dicts)
+
+                for j, result in enumerate(results):
+                    amend = batch[j]
+                    cl_ord_id = amend.cl_ord_id
+                    order = self._context.get_order(cl_ord_id) if cl_ord_id else None
+
+                    if result.get("sCode") == "0":
+                        if order:
+                            # Update order with new values
+                            if amend.new_px is not None:
+                                order.price = amend.new_px
+                            if amend.new_sz is not None:
+                                order.size = amend.new_sz
+                            order.mark_live()
+                        logger.info(
+                            f"Order amended: {cl_ord_id} "
+                            f"new_px={amend.new_px} new_sz={amend.new_sz}"
+                        )
+                    else:
+                        error_msg = result.get("sMsg", "Unknown error")
+                        if order:
+                            order.mark_live()  # Revert to live state
+                        logger.warning(
+                            f"Amend failed for {cl_ord_id}: {error_msg}"
+                        )
+
+            except Exception as e:
+                logger.error(f"Failed to amend batch: {e}")
+                # Revert orders to live state
+                for amend in batch:
+                    order = self._context.get_order(amend.cl_ord_id) if amend.cl_ord_id else None
+                    if order and order.state == OrderState.AMENDING:
+                        order.mark_live()
 
     async def cancel_all(self) -> int:
         """Cancel all active orders.

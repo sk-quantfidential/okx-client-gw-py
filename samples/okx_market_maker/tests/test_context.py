@@ -5,6 +5,7 @@ from decimal import Decimal
 import pytest
 
 from samples.okx_market_maker.context.market_context import MarketContext
+from samples.okx_market_maker.models.amend_request import AmendRequest
 from samples.okx_market_maker.models.strategy_order import OrderState, StrategyOrder
 
 
@@ -271,3 +272,108 @@ class TestStrategyOrder:
         assert d["side"] == "buy"
         assert d["price"] == "50000"
         assert d["state"] == "pending"
+
+
+class TestAmendRequest:
+    """Tests for AmendRequest typed POD object."""
+
+    def test_amend_with_price_only(self) -> None:
+        """Test amend request with only new price."""
+        amend = AmendRequest(
+            inst_id="BTC-USDT",
+            cl_ord_id="mm_000001",
+            new_px=Decimal("50100"),
+        )
+
+        assert amend.inst_id == "BTC-USDT"
+        assert amend.cl_ord_id == "mm_000001"
+        assert amend.new_px == Decimal("50100")
+        assert amend.new_sz is None
+
+    def test_amend_with_size_only(self) -> None:
+        """Test amend request with only new size."""
+        amend = AmendRequest(
+            inst_id="BTC-USDT",
+            ord_id="1234567890",
+            new_sz=Decimal("0.002"),
+        )
+
+        assert amend.ord_id == "1234567890"
+        assert amend.new_sz == Decimal("0.002")
+        assert amend.new_px is None
+
+    def test_amend_with_both_price_and_size(self) -> None:
+        """Test amend request with both price and size."""
+        amend = AmendRequest(
+            inst_id="BTC-USDT",
+            cl_ord_id="mm_000001",
+            new_px=Decimal("50100"),
+            new_sz=Decimal("0.003"),
+        )
+
+        assert amend.new_px == Decimal("50100")
+        assert amend.new_sz == Decimal("0.003")
+
+    def test_validation_requires_order_id(self) -> None:
+        """Test that either cl_ord_id or ord_id is required."""
+        with pytest.raises(ValueError, match="cl_ord_id or ord_id"):
+            AmendRequest(
+                inst_id="BTC-USDT",
+                new_px=Decimal("50100"),
+            )
+
+    def test_validation_requires_changes(self) -> None:
+        """Test that at least one of new_px or new_sz is required."""
+        with pytest.raises(ValueError, match="new_px or new_sz"):
+            AmendRequest(
+                inst_id="BTC-USDT",
+                cl_ord_id="mm_000001",
+            )
+
+    def test_to_okx_dict(self) -> None:
+        """Test conversion to OKX API format."""
+        amend = AmendRequest(
+            inst_id="BTC-USDT",
+            cl_ord_id="mm_000001",
+            new_px=Decimal("50100.50"),
+            new_sz=Decimal("0.00123"),
+        )
+
+        d = amend.to_okx_dict()
+
+        assert d["instId"] == "BTC-USDT"
+        assert d["clOrdId"] == "mm_000001"
+        assert d["newPx"] == "50100.50"
+        assert d["newSz"] == "0.00123"
+        assert "ordId" not in d
+
+    def test_to_okx_dict_with_ord_id(self) -> None:
+        """Test conversion with ord_id instead of cl_ord_id."""
+        amend = AmendRequest(
+            inst_id="BTC-USDT",
+            ord_id="1234567890",
+            new_px=Decimal("50200"),
+        )
+
+        d = amend.to_okx_dict()
+
+        assert d["ordId"] == "1234567890"
+        assert "clOrdId" not in d
+        assert d["newPx"] == "50200"
+        assert "newSz" not in d
+
+    def test_from_okx_dict(self) -> None:
+        """Test creation from OKX API format."""
+        data = {
+            "instId": "BTC-USDT",
+            "clOrdId": "mm_000001",
+            "newPx": "50100.50",
+            "newSz": "0.00123",
+        }
+
+        amend = AmendRequest.from_okx_dict(data)
+
+        assert amend.inst_id == "BTC-USDT"
+        assert amend.cl_ord_id == "mm_000001"
+        assert amend.new_px == Decimal("50100.50")
+        assert amend.new_sz == Decimal("0.00123")
