@@ -4,11 +4,17 @@ from decimal import Decimal
 
 import pytest
 
-from samples.okx_market_maker.config.settings import MarketMakerSettings
-from samples.okx_market_maker.context.market_context import MarketContext
-from samples.okx_market_maker.strategy.inventory_skew_strategy import InventorySkewStrategy
-from samples.okx_market_maker.strategy.sample_mm_strategy import SampleMMStrategy
-from samples.okx_market_maker.strategy.volatility_strategy import VolatilityStrategy
+from samples.okx_market_maker.application.context.market_context import MarketContext
+from samples.okx_market_maker.core.config.settings import MarketMakerSettings
+from samples.okx_market_maker.domain.strategies.grid_strategy import (
+    SampleMMStrategy,
+)
+from samples.okx_market_maker.domain.strategies.inventory_skew_strategy import (
+    InventorySkewStrategy,
+)
+from samples.okx_market_maker.domain.strategies.volatility_strategy import (
+    VolatilityStrategy,
+)
 
 
 @pytest.fixture

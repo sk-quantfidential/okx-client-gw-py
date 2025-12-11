@@ -16,51 +16,49 @@ Usage:
 """
 
 from dataclasses import dataclass
-from typing import Optional
-import json
 
 
 @dataclass
 class CarryTradePosition:
     """Represents a delta-neutral carry trade position."""
-    
+
     # Spot leg
     spot_btc_amount: float
     spot_btc_price: float
     spot_discount_rate: float  # e.g., 0.97 for 97%
-    
+
     # Perp leg (short)
     perp_size_btc: float       # Should be negative for short
     perp_entry_price: float
     perp_mark_price: float
     perp_funding_rate: float   # Current 8h funding rate
-    
+
     @property
     def spot_usd_value(self) -> float:
         return self.spot_btc_amount * self.spot_btc_price
-    
+
     @property
     def spot_discounted_value(self) -> float:
         return self.spot_usd_value * self.spot_discount_rate
-    
+
     @property
     def perp_notional(self) -> float:
         return abs(self.perp_size_btc) * self.perp_mark_price
-    
+
     @property
     def perp_unrealised_pnl(self) -> float:
         # For short: profit when price drops
         return -self.perp_size_btc * (self.perp_mark_price - self.perp_entry_price)
-    
+
     @property
     def net_delta(self) -> float:
         """Net BTC exposure (should be ~0 for delta-neutral)."""
         return self.spot_btc_amount + self.perp_size_btc
-    
+
     @property
     def is_delta_neutral(self) -> bool:
         return abs(self.net_delta) < 0.01  # Allow 1% tolerance
-    
+
     @property
     def annualised_funding_yield(self) -> float:
         """Projected annual yield from funding payments."""
@@ -82,26 +80,26 @@ class DeltaNeutralAnalyser:
     - Short perp profits (increasing adjEq at 100% rate)
     - Net effect is slightly POSITIVE because USDT has no haircut
     """
-    
+
     def __init__(self, client):
         self.client = client
-    
-    def get_current_position(self) -> Optional[CarryTradePosition]:
+
+    def get_current_position(self) -> CarryTradePosition | None:
         """Fetch current position from OKX."""
         # Get spot holdings
         spot_holdings = self.client.get_spot_balances()
         btc_spot = next((h for h in spot_holdings if h.currency == 'BTC'), None)
-        
+
         # Get perp position
         positions = self.client.get_positions()
         btc_perp = next(
             (p for p in positions if 'BTC-USDT' in p.inst_id and 'SWAP' in p.inst_id),
             None
         )
-        
+
         if not btc_spot or not btc_perp:
             return None
-        
+
         # Get funding rate
         try:
             funding_data = self.client._public_request(
@@ -111,7 +109,7 @@ class DeltaNeutralAnalyser:
             funding_rate = float(funding_data[0].get('fundingRate', 0)) if funding_data else 0
         except:
             funding_rate = 0
-        
+
         return CarryTradePosition(
             spot_btc_amount=btc_spot.equity,
             spot_btc_price=btc_spot.usd_value / btc_spot.equity if btc_spot.equity else 0,
@@ -121,7 +119,7 @@ class DeltaNeutralAnalyser:
             perp_mark_price=btc_perp.mark_price,
             perp_funding_rate=funding_rate,
         )
-    
+
     def analyse_price_move(self, position: CarryTradePosition, price_change_pct: float) -> dict:
         """
         Analyse how a price move affects margin.
@@ -136,26 +134,26 @@ class DeltaNeutralAnalyser:
         - Since discount < 100%, you're slightly BETTER off
         """
         new_price = position.spot_btc_price * (1 + price_change_pct)
-        
+
         # Spot value change (in discounted USD)
         old_spot_discounted = position.spot_discounted_value
         new_spot_value = position.spot_btc_amount * new_price
         new_spot_discounted = new_spot_value * position.spot_discount_rate
         spot_change = new_spot_discounted - old_spot_discounted
-        
+
         # Perp PnL change (in USDT, 100% credit)
         # For short: new_pnl = -size * (new_price - entry)
         new_perp_pnl = -position.perp_size_btc * (new_price - position.perp_entry_price)
         perp_pnl_change = new_perp_pnl - position.perp_unrealised_pnl
-        
+
         # Net effect on adjusted equity
         net_change = spot_change + perp_pnl_change
-        
+
         # The discount rate advantage
         # If position were perfectly matched, the "discount arbitrage" is:
         discount_advantage = abs(position.perp_size_btc) * abs(price_change_pct) * \
                            position.spot_btc_price * (1 - position.spot_discount_rate)
-        
+
         return {
             "price_change_pct": price_change_pct * 100,
             "old_price": position.spot_btc_price,
@@ -166,7 +164,7 @@ class DeltaNeutralAnalyser:
             "discount_advantage": discount_advantage if price_change_pct < 0 else -discount_advantage,
             "is_beneficial": net_change >= 0,
         }
-    
+
     def find_danger_scenarios(self, position: CarryTradePosition, balance) -> list[dict]:
         """
         Identify scenarios that could threaten the position.
@@ -180,7 +178,7 @@ class DeltaNeutralAnalyser:
         4. Liquidation engine lag - during extreme volatility
         """
         dangers = []
-        
+
         # 1. Check funding rate
         if position.perp_funding_rate < 0:
             hourly_cost = abs(position.perp_funding_rate) * position.perp_notional
@@ -192,7 +190,7 @@ class DeltaNeutralAnalyser:
                 "daily_cost_usd": daily_cost,
                 "annualised_cost_pct": abs(position.annualised_funding_yield),
             })
-        
+
         # 2. Check if significantly under-hedged
         if abs(position.net_delta) > 0.1:
             exposure_pct = (position.net_delta / position.spot_btc_amount) * 100
@@ -203,7 +201,7 @@ class DeltaNeutralAnalyser:
                 "net_delta_btc": position.net_delta,
                 "exposure_usd": position.net_delta * position.spot_btc_price,
             })
-        
+
         # 3. Check margin buffer
         if balance.margin_ratio < 500:
             dangers.append({
@@ -213,7 +211,7 @@ class DeltaNeutralAnalyser:
                 "current_ratio": balance.margin_ratio,
                 "recommended_min": 500,
             })
-        
+
         # 4. Check discount tier (rough estimate)
         if position.spot_btc_amount > 100:
             dangers.append({
@@ -223,24 +221,24 @@ class DeltaNeutralAnalyser:
                 "btc_amount": position.spot_btc_amount,
                 "recommendation": "Check /api/v5/public/discount-rate-interest-free-quota for tier boundaries",
             })
-        
+
         return dangers
-    
+
     def print_analysis(self):
         """Run and print full analysis."""
         print("\n" + "="*70)
         print("  DELTA-NEUTRAL CARRY TRADE ANALYSIS")
         print("="*70)
-        
+
         # Fetch position
         position = self.get_current_position()
         if not position:
             print("\n  ⚠️  No delta-neutral position detected")
             print("  Looking for: Spot BTC + Short BTC-USDT-SWAP")
             return
-        
+
         balance = self.client.get_account_balance()
-        
+
         # Position summary
         print("\n  --- POSITION STRUCTURE ---")
         print(f"  Spot BTC:            {position.spot_btc_amount:.6f} BTC")
@@ -255,7 +253,7 @@ class DeltaNeutralAnalyser:
         print()
         print(f"  Net Delta:           {position.net_delta:+.6f} BTC")
         print(f"  Delta Neutral:       {'✅ YES' if position.is_delta_neutral else '❌ NO'}")
-        
+
         # Funding analysis
         print("\n  --- FUNDING YIELD ---")
         if position.perp_funding_rate >= 0:
@@ -266,7 +264,7 @@ class DeltaNeutralAnalyser:
         else:
             print(f"  ⚠️  NEGATIVE FUNDING: {position.perp_funding_rate*100:.4f}%")
             print(f"  You are PAYING {abs(position.annualised_funding_yield):.2f}% annualised")
-        
+
         # Price move analysis
         print("\n  --- MARGIN BEHAVIOUR ON PRICE MOVES ---")
         print()
@@ -275,14 +273,14 @@ class DeltaNeutralAnalyser:
         print()
         print(f"  {'Price Δ':>10} {'Spot Δ':>14} {'Perp Δ':>14} {'Net Δ':>14} {'Advantage':>12}")
         print(f"  {'-'*10} {'-'*14} {'-'*14} {'-'*14} {'-'*12}")
-        
+
         for pct in [-0.30, -0.20, -0.10, 0.10, 0.20, 0.30]:
             result = self.analyse_price_move(position, pct)
             indicator = "✅" if result["is_beneficial"] else "❌"
             print(f"  {pct*100:>+9.0f}% ${result['spot_change_discounted']:>+13,.0f} "
                   f"${result['perp_pnl_change']:>+13,.0f} ${result['net_adj_eq_change']:>+13,.0f} "
                   f"{indicator} ${result['discount_advantage']:>+10,.0f}")
-        
+
         # Danger scenarios
         dangers = self.find_danger_scenarios(position, balance)
         if dangers:
@@ -299,7 +297,7 @@ class DeltaNeutralAnalyser:
                             print(f"     {k}: {v}")
         else:
             print("\n  ✅ No significant risk factors detected")
-        
+
         # Summary
         print("\n  --- SUMMARY ---")
         if position.is_delta_neutral and balance.margin_ratio > 300:
@@ -309,7 +307,7 @@ class DeltaNeutralAnalyser:
                 print(f"  ✅ Earning positive funding ({position.annualised_funding_yield:.1f}% APY)")
         else:
             print("  ⚠️  Review the risk factors above")
-        
+
         print("\n" + "="*70 + "\n")
 
 
