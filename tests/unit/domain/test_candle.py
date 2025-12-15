@@ -1,6 +1,6 @@
 """Tests for Candle domain model."""
 
-from datetime import datetime
+from datetime import datetime, timedelta
 from decimal import Decimal
 
 import pytest
@@ -14,6 +14,7 @@ class TestCandleCreation:
     def test_create_candle(self):
         candle = Candle(
             timestamp=datetime(2024, 1, 1, 12, 0, 0),
+            time_delta=timedelta(hours=1),
             open=Decimal("100.00"),
             high=Decimal("105.00"),
             low=Decimal("95.00"),
@@ -29,6 +30,7 @@ class TestCandleCreation:
         assert candle.low == Decimal("95.00")
         assert candle.close == Decimal("102.00")
         assert candle.volume == Decimal("1000.0")
+        assert candle.time_delta == timedelta(hours=1)
         assert candle.confirm is True
 
     def test_from_okx_array(self):
@@ -45,11 +47,12 @@ class TestCandleCreation:
             "1",  # confirmed
         ]
 
-        candle = Candle.from_okx_array(data)
+        candle = Candle.from_okx_array(data, time_delta=timedelta(hours=1))
 
         assert candle.open == Decimal("100.00")
         assert candle.high == Decimal("105.00")
         assert candle.close == Decimal("102.00")
+        assert candle.time_delta == timedelta(hours=1)
         assert candle.confirm is True
 
     def test_from_okx_array_unconfirmed(self):
@@ -65,7 +68,7 @@ class TestCandleCreation:
             "0",  # not confirmed
         ]
 
-        candle = Candle.from_okx_array(data)
+        candle = Candle.from_okx_array(data, time_delta=timedelta(hours=1))
         assert candle.confirm is False
 
 
@@ -76,6 +79,7 @@ class TestCandleProperties:
     def bullish_candle(self):
         return Candle(
             timestamp=datetime(2024, 1, 1, 12, 0, 0),
+            time_delta=timedelta(hours=1),
             open=Decimal("100.00"),
             high=Decimal("110.00"),
             low=Decimal("95.00"),
@@ -90,6 +94,7 @@ class TestCandleProperties:
     def bearish_candle(self):
         return Candle(
             timestamp=datetime(2024, 1, 1, 12, 0, 0),
+            time_delta=timedelta(hours=1),
             open=Decimal("105.00"),
             high=Decimal("110.00"),
             low=Decimal("95.00"),
@@ -134,6 +139,7 @@ class TestCandleImmutability:
     def test_candle_is_frozen(self):
         candle = Candle(
             timestamp=datetime(2024, 1, 1, 12, 0, 0),
+            time_delta=timedelta(hours=1),
             open=Decimal("100.00"),
             high=Decimal("105.00"),
             low=Decimal("95.00"),

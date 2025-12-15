@@ -7,6 +7,7 @@ Handles message parsing and routing for tickers, trades, candles, and order book
 from __future__ import annotations
 
 from collections.abc import AsyncIterator
+from datetime import timedelta
 from typing import TYPE_CHECKING, Any
 
 from okx_client_gw.domain.enums import Bar, ChannelType, InstType, OrderBookAction
@@ -122,6 +123,7 @@ class StreamingService:
         """
         channel = ChannelType.candle_channel(bar)
         await self._client.subscribe(channel.value, inst_id=inst_id)
+        time_delta = timedelta(seconds=bar.seconds)
 
         async for msg in self._client.messages():
             if not self._is_data_message(msg, channel.value):
@@ -130,7 +132,7 @@ class StreamingService:
             for data in msg.get("data", []):
                 # OKX candle data is an array of arrays
                 if isinstance(data, list):
-                    yield Candle.from_okx_array(data)
+                    yield Candle.from_okx_array(data, time_delta=time_delta)
 
     async def stream_orderbook(
         self,
