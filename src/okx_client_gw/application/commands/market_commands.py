@@ -6,7 +6,7 @@ order books, and trades. These endpoints do not require authentication.
 
 from __future__ import annotations
 
-from datetime import datetime
+from datetime import datetime, timedelta
 from typing import TYPE_CHECKING
 
 from okx_client_gw.application.commands.base import OkxQueryCommand
@@ -170,7 +170,8 @@ class GetCandlesCommand(OkxQueryCommand[list[Candle]]):
             params["after"] = str(int(self._after.timestamp() * 1000))
 
         data = await client.get_data("/api/v5/market/candles", params=params)
-        return [Candle.from_okx_array(row) for row in data]
+        time_delta = timedelta(seconds=self._bar.seconds)
+        return [Candle.from_okx_array(row, time_delta=time_delta) for row in data]
 
 
 class GetHistoryCandlesCommand(OkxQueryCommand[list[Candle]]):
@@ -237,7 +238,8 @@ class GetHistoryCandlesCommand(OkxQueryCommand[list[Candle]]):
             params["after"] = str(int(self._after.timestamp() * 1000))
 
         data = await client.get_data("/api/v5/market/history-candles", params=params)
-        return [Candle.from_okx_array(row) for row in data]
+        time_delta = timedelta(seconds=self._bar.seconds)
+        return [Candle.from_okx_array(row, time_delta=time_delta) for row in data]
 
 
 class GetOrderBookCommand(OkxQueryCommand[OrderBook]):

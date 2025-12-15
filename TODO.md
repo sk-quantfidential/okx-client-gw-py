@@ -325,6 +325,98 @@ and documentation for trading operations.
 
 ---
 
-*Last Updated: 2025-12-08*
-*Completed: Epic OKX-0001 Milestones 1-10, Epic OKX-0002 Milestones 11-18*
-*Status: Both Epics Complete - 128 tests passing (105 unit + 16 integration + 7 BDD)*
+## Epic OKX-0003: OKX Market Maker Framework
+
+**Status:** Complete
+**Target:** v0.3.0
+**Depends On:** Epic OKX-0002
+
+Production-quality market maker sample demonstrating Clean Architecture patterns with the OKX
+client gateway library. Includes private WebSocket support, batch order operations, and three
+strategy variants.
+
+---
+
+### Milestone 1: Library Extensions ✅ COMPLETED
+
+**Status:** ✅ Completed
+
+**Completed:**
+
+- [x] Batch Order Commands (PlaceBatchOrdersCommand, AmendBatchOrdersCommand, CancelBatchOrdersCommand)
+- [x] Extended TradeService with batch methods
+- [x] Private WebSocket Client (OkxPrivateWsClient) with HMAC-SHA256 login
+- [x] Private Streaming Service for account, positions, orders channels
+
+---
+
+### Milestone 2: Sample Infrastructure ✅ COMPLETED
+
+**Status:** ✅ Completed
+
+**Completed:**
+
+- [x] Pydantic Settings with YAML + environment override support
+- [x] MarketContext state container replacing global state
+- [x] StrategyOrder state machine (PENDING → SENT → ACK → LIVE → FILLED/CANCELED)
+
+---
+
+### Milestone 3: Strategy Framework ✅ COMPLETED
+
+**Status:** ✅ Completed
+
+**Completed:**
+
+- [x] StrategyProtocol for dependency injection
+- [x] BaseStrategy abstract base with order matching logic
+- [x] GridStrategy (formerly SampleMMStrategy) - symmetric grid around bid/ask
+- [x] InventorySkewStrategy - position-based price skewing
+- [x] VolatilityStrategy - volatility-adjusted spreads
+
+---
+
+### Milestone 4: Services and Orchestration ✅ COMPLETED
+
+**Status:** ✅ Completed
+
+**Completed:**
+
+- [x] OrderHandler - batch order operations with max 20 per request
+- [x] HealthChecker - data staleness detection
+- [x] RiskCalculator - P&L, exposure, position limits
+- [x] MarketMaker orchestrator with graceful shutdown
+
+---
+
+### Milestone 5: Tests and Documentation ✅ COMPLETED
+
+**Status:** ✅ Completed
+
+**Completed:**
+
+- [x] 30 unit tests covering strategies, context, and models
+- [x] Comprehensive README with usage examples
+
+---
+
+### Milestone 6: Clean Architecture Refactoring ✅ COMPLETED
+
+**Status:** ✅ Completed
+**Branch:** `refactor/epic-OKX-0003-clean-architecture`
+
+**Completed:**
+
+- [x] Restructure okx_market_maker to clean architecture (domain/ports/adapters/application/core/presentation)
+- [x] Restructure okx_multicurrency_margin_monitor to clean architecture
+- [x] Restructure okx_portfolio_margin_monitor to clean architecture
+- [x] Extract OrderState enum to domain/enums.py
+- [x] Move StrategyProtocol to ports/strategy.py
+- [x] Rename SampleMMStrategy → GridStrategy (with backwards-compatible alias)
+- [x] All 30 tests pass, ruff clean
+
+---
+
+*Last Updated: 2025-12-11*
+*Completed: Epic OKX-0001 (Milestones 1-10), Epic OKX-0002 (Milestones 11-18), Epic OKX-0003 (Milestones 1-6)*
+*Status: All Three Epics Complete - 128 tests passing (105 unit + 16 integration + 7 BDD) + 30 sample tests*

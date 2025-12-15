@@ -1,6 +1,6 @@
 """Candle (OHLCV) domain model."""
 
-from datetime import datetime
+from datetime import datetime, timedelta
 from decimal import Decimal
 
 from pydantic import BaseModel, Field
@@ -16,6 +16,7 @@ class Candle(BaseModel):
 
     Attributes:
         timestamp: Opening time of the candlestick (Unix timestamp in ms).
+        time_delta: Candle duration/granularity (e.g., 1H = 1 hour).
         open: Opening price.
         high: Highest price.
         low: Lowest price.
@@ -27,6 +28,7 @@ class Candle(BaseModel):
     """
 
     timestamp: datetime = Field(description="Opening time of the candlestick")
+    time_delta: timedelta = Field(description="Candle duration/granularity")
     open: Decimal = Field(description="Opening price")
     high: Decimal = Field(description="Highest price")
     low: Decimal = Field(description="Lowest price")
@@ -39,17 +41,19 @@ class Candle(BaseModel):
     model_config = {"frozen": True}
 
     @classmethod
-    def from_okx_array(cls, data: list[str]) -> "Candle":
+    def from_okx_array(cls, data: list[str], time_delta: timedelta) -> "Candle":
         """Create a Candle from OKX API array response.
 
         Args:
             data: Array from OKX API [ts, o, h, l, c, vol, volCcy, volCcyQuote, confirm]
+            time_delta: Candle duration/granularity (e.g., timedelta(hours=1) for 1H bar)
 
         Returns:
             Candle instance.
         """
         return cls(
             timestamp=datetime.fromtimestamp(int(data[0]) / 1000),
+            time_delta=time_delta,
             open=Decimal(data[1]),
             high=Decimal(data[2]),
             low=Decimal(data[3]),
@@ -94,3 +98,31 @@ class Candle(BaseModel):
     def is_bearish(self) -> bool:
         """Check if candle is bearish (close < open)."""
         return self.close < self.open
+
+    # Float accessor properties for CandleProtocol compliance
+    # (Protocol expects float, OKX uses Decimal internally)
+
+    @property
+    def open_float(self) -> float:
+        """Get opening price as float for CandleProtocol compliance."""
+        return float(self.open)
+
+    @property
+    def high_float(self) -> float:
+        """Get highest price as float for CandleProtocol compliance."""
+        return float(self.high)
+
+    @property
+    def low_float(self) -> float:
+        """Get lowest price as float for CandleProtocol compliance."""
+        return float(self.low)
+
+    @property
+    def close_float(self) -> float:
+        """Get closing price as float for CandleProtocol compliance."""
+        return float(self.close)
+
+    @property
+    def volume_float(self) -> float:
+        """Get volume as float for CandleProtocol compliance."""
+        return float(self.volume)
